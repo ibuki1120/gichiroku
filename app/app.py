@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)  # ロガーの取得
 PROJECT_ID = os.environ.get("PROJECT_ID")  # Google CloudプロジェクトID
 REGION = os.environ.get("REGION")  # Cloud Runリージョン
 BUCKET_NAME = f"{PROJECT_ID}-storage"  # Cloud Storageバケット名
-CLOUD_SQL_CONNECTION_NAME = os.environ.get("CLOUD_SQL_CONNECTION_NAME")  # Cloud SQL接続名
+INSTANCE_CONNECTION_NAME = os.environ.get("INSTANCE_CONNECTION_NAME")  # Cloud SQL接続名
 CLOUD_SQL_USER = os.environ.get("CLOUD_SQL_USER")  # Cloud SQLユーザー名
 CLOUD_SQL_PASSWORD = os.environ.get("CLOUD_SQL_PASSWORD")  # Cloud SQLパスワード
 DATABASE_NAME = os.environ.get("DATABASE_NAME", "mygichi")  # Cloud SQLデータベース名 (デフォルト: mygichi)
@@ -38,7 +38,7 @@ try:
     mysql_config = {
         "user": CLOUD_SQL_USER,
         "password": CLOUD_SQL_PASSWORD,
-        "host": CLOUD_SQL_CONNECTION_NAME.split(":")[0],  # 接続名を分割してホスト名を取得
+        "host": INSTANCE_CONNECTION_NAME.split(":")[0],  # 接続名を分割してホスト名を取得
         "database": DATABASE_NAME
     }
     cnx = mysql.connector.connect(**mysql_config)  # データベースに接続
@@ -138,7 +138,7 @@ def healthz():
             "environment_variables": {  # 環境変数
                 "PROJECT_ID": os.environ.get("PROJECT_ID"),
                 "REGION": os.environ.get("REGION"),
-                "CLOUD_SQL_CONNECTION_NAME": os.environ.get("CLOUD_SQL_CONNECTION_NAME"),
+                "INSTANCE_CONNECTION_NAME": os.environ.get("INSTANCE_CONNECTION_NAME"),
                 "CLOUD_SQL_USER": os.environ.get("CLOUD_SQL_USER"),
                 "DATABASE_NAME": os.environ.get("DATABASE_NAME")
             },

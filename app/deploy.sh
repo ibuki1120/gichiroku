@@ -26,6 +26,8 @@ SERVICE_NAME="gichiroku"                     # 任意のサービス名
 INSTANCE_CONNECTION_NAME=$(gcloud sql instances describe gichidb --format="value(connectionName)") #your-instance-nameをインスタンス名に変更
 CLOUD_SQL_USER="gichi"
 CLOUD_SQL_PASSWORD="gichipass"
+# DATABASE_NAME=$(gcloud sql databases list --instance=gichidb --format="value(name)" | grep "mygihi") →これ出力がおかしい。多分vlue(name)のとこ
+DATABASE_NAME="mygichi"
 export PROJECT_ID
 export REGION
 export INSTANCE_CONNECTION_NAME
@@ -39,6 +41,7 @@ echo "SERVICE_NAME: $SERVICE_NAME"
 echo "INSTANCE_CONNECTION_NAME: $INSTANCE_CONNECTION_NAME"
 echo "CLOUD_SQL_USER: $CLOUD_SQL_USER"
 echo "CLOUD_SQL_PASSWORD: $CLOUD_SQL_PASSWORD"
+echo "DATABASE_NAME: $DATABASE_NAME"
 
 
 IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
@@ -58,7 +61,7 @@ echo "[3/4] Cloud Run にデプロイ"
 echo "========================================================"
 
 
-
+# 環境変数yamlにしたい
 gcloud run deploy "${SERVICE_NAME}" \
     --image "${IMAGE_NAME}" \
     --region "${REGION}" \
@@ -66,7 +69,6 @@ gcloud run deploy "${SERVICE_NAME}" \
     --allow-unauthenticated \
     --platform managed \
     --set-env-vars PROJECT_ID="$PROJECT_ID",REGION="$REGION",INSTANCE_CONNECTION_NAME="$INSTANCE_CONNECTION_NAME",CLOUD_SQL_USER="$CLOUD_SQL_USER",CLOUD_SQL_PASSWORD="$CLOUD_SQL_PASSWORD",DATABASE_NAME="$DATABASE_NAME"
-
 echo "========================================================"
 echo "[4/4] 完了！"
 echo "--------------------------------------------------------"
@@ -75,5 +77,5 @@ gcloud run services describe "${SERVICE_NAME}" --region="${REGION}" --format='va
 echo "========================================================"
 
 echo "Curl: "
-curl -X POST -F "audio=@voice.mp3" https://mp3-analyzer-mbe4iiqw4q-uc.a.run.app/analyze_mp3"
+curl -X POST -F "audio=@voice.mp3" "https://mp3-analyzer-mbe4iiqw4q-uc.a.run.app/analyze_mp3"
 echo "========================================================"
