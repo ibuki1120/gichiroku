@@ -230,7 +230,7 @@ echo "========================================================"
 ```
 
 ## デバッグ
-過去100件のログを出力するよ^^
+過去10件のログを出力するよ^^
 ```
-gcloud logging read --filter="resource.type=cloud_run_revision AND resource.labels.service_name=gichiroku" --order="desc" --limit=100
+gcloud logging read "severity>=ERROR" --limit 10
 ```
