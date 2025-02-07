@@ -16,42 +16,36 @@
 ## シーケンス図^^
 ```mermaid
 sequenceDiagram
-    participant ユーザー
-    participant フロントエンド
-    participant Cloud Run (バックエンド)
-    participant Cloud Storage
-    participant Vertex AI
-    participant LLM
+    participant Local Machine
+    participant Cloud Shell
+    participant Container Registry (GCR)
+    participant Cloud Run
+    participant Cloud SQL
+    participant Speech-to-Text API
+    participant Vertex AI (LLM)
 
-    ユーザー->>フロントエンド: 音声ファイルをアップロード
-    activate フロントエンド
-    フロントエンド->>Cloud Run (バックエンド): 音声ファイルを送信
-    deactivate フロントエンド
-    activate Cloud Run (バックエンド)
-    Cloud Run (バックエンド)->>Cloud Storage: 音声ファイルを保存
-    Cloud Run (バックエンド)->>Cloud Run (バックエンド): ファイルパスを生成
-    Cloud Run (バックエンド)->>Vertex AI: 音声ファイルを文字起こし
-    activate Vertex AI
-    Vertex AI->>LLM: 音声データを送信
-    activate LLM
-    LLM-->>Vertex AI: 文字起こし結果を返却
-    deactivate LLM
-    Vertex AI-->>Cloud Run (バックエンド): 文字起こし結果を返却
-    deactivate Vertex AI
-    Cloud Run (バックエンド)->>Vertex AI: 文字起こし結果を要約
-    activate Vertex AI
-    Vertex AI->>LLM: 文字起こし結果を送信
-    activate LLM
-    LLM-->>Vertex AI: 要約結果を返却
-    deactivate LLM
-    Vertex AI-->>Cloud Run (バックエンド): 要約結果を返却
-    deactivate Vertex AI
-    Cloud Run (バックエンド)->>Cloud SQL: 要約結果を保存
-    Cloud Run (バックエンド)->>フロントエンド: 議事録生成完了通知
-    deactivate Cloud Run (バックエンド)
-    activate フロントエンド
-    フロントエンド->>ユーザー: 議事録を表示
-    deactivate フロントエンド
+    Local Machine->>Cloud Shell: ./deploy.sh 実行
+    activate Cloud Shell
+    Cloud Shell->>Cloud Shell: 環境変数設定
+    Cloud Shell->>Cloud Shell: Docker build
+    Cloud Shell->>Container Registry (GCR): Docker push
+    Container Registry (GCR)-->>Cloud Shell: イメージ push 完了
+    Cloud Shell->>Cloud Run: gcloud run deploy
+    Cloud Run->>Container Registry (GCR): イメージ pull
+    Cloud Run->>Cloud SQL: データベース接続 (Cloud SQL Proxy/Auth plugin 経由)
+    Cloud Run->>Speech-to-Text API: 音声テキスト変換リクエスト
+    Speech-to-Text API-->>Cloud Run: テキストデータ
+    Cloud Run->>Vertex AI (LLM): テキストデータ送信
+    Vertex AI (LLM)-->>Cloud Run: LLM 推論結果
+    Cloud Run-->>Local Machine: サービス URL
+    Local Machine->>Cloud Shell: curl -X POST ... 実行
+    Cloud Shell->>Cloud Run: 音声データ送信
+    Cloud Run->>Speech-to-Text API: 音声テキスト変換リクエスト
+    Speech-to-Text API-->>Cloud Run: テキストデータ
+    Cloud Run->>Vertex AI (LLM): テキストデータ送信
+    Vertex AI (LLM)-->>Cloud Run: LLM 推論結果
+    Cloud Run-->>Local Machine: LLM 推論結果
+    deactivate Cloud Shell
 ```
 
 ## 
