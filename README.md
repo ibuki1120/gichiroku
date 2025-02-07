@@ -135,12 +135,15 @@ gcloud sql instances list
 gcloud sql instances create gichidb --database-version=MYSQL_8_0 --tier=db-f1-micro --region=asia-northeast1
 
 # DB作成
-gcloud sql databases create mygichi --instance=my-sql-instance
+gcloud sql databases create mygichi --instance=gichidb
 # ユーザ作成
-gcloud sql users create gichi --instance=my-sql-instance --password=gichipass
+gcloud sql users create gichi --instance=gichidb --password=gichipass
 
 # 事後確認
+## インスタンスの確認
 gcloud sql instances list
+## DBの確認
+gcloud sql databases list --instance=gichidb --format="value(name)" 
 ```
 
 ### Cloud Run（バックエンドのデプロイ）
