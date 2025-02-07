@@ -21,12 +21,17 @@ set -e
 
 # ---- 必要に応じて環境変数を指定 (無ければ手動で書き換えてください) ----
 PROJECT_ID="${PROJECT_ID:-gichiroku}" 
-REGION="${REGION:-us-central1}"                # デフォルト us-central1
+REGION="${REGION:-asia-northeast1}"                # デフォルトはus-central1なので注意
 SERVICE_NAME="gichiroku"                     # 任意のサービス名
 INSTANCE_CONNECTION_NAME=$(gcloud sql instances describe gichidb --format="value(connectionName)") #your-instance-nameをインスタンス名に変更
 CLOUD_SQL_USER="gichi"
 CLOUD_SQL_PASSWORD="gichipass"
-
+export PROJECT_ID
+export REGION
+export INSTANCE_CONNECTION_NAME
+export CLOUD_SQL_USER
+export CLOUD_SQL_PASSWORD
+export DATABASE_NAME
 echo "環境変数の確認 本番時は絶対消す！！！"
 echo "PROJECT_ID: $PROJECT_ID"
 echo "REGION: $REGION"
@@ -51,14 +56,16 @@ docker push "${IMAGE_NAME}"
 echo "========================================================"
 echo "[3/4] Cloud Run にデプロイ"
 echo "========================================================"
-gcloud run deploy "${SERVICE_NAME}" \
-  --image "${IMAGE_NAME}" \
-  --region "${REGION}" \
-  --project "${PROJECT_ID}" \
-  --allow-unauthenticated \
-  --platform managed \
-  --set-env-vars PROJECT_ID="${PROJECT_ID}",REGION="${REGION}",CLOUD_SQL_CONNECTION_NAME=[],CLOUD_SQL_USER=[],CLOUD_SQL_PASSWORD=[],DATABASE_NAME=[]
 
+
+
+gcloud run deploy "${SERVICE_NAME}" \
+    --image "${IMAGE_NAME}" \
+    --region "${REGION}" \
+    --project "${PROJECT_ID}" \
+    --allow-unauthenticated \
+    --platform managed \
+    --set-env-vars PROJECT_ID="$PROJECT_ID",REGION="$REGION",INSTANCE_CONNECTION_NAME="$INSTANCE_CONNECTION_NAME",CLOUD_SQL_USER="$CLOUD_SQL_USER",CLOUD_SQL_PASSWORD="$CLOUD_SQL_PASSWORD",DATABASE_NAME="$DATABASE_NAME"
 
 echo "========================================================"
 echo "[4/4] 完了！"
@@ -68,5 +75,5 @@ gcloud run services describe "${SERVICE_NAME}" --region="${REGION}" --format='va
 echo "========================================================"
 
 echo "Curl: "
-curl -X POST -F "audio=@voice.mp3" https://mp3-analyzer-mbe4iiqw4q-uc.a.run.app/analyze_mp3
+curl -X POST -F "audio=@voice.mp3" https://mp3-analyzer-mbe4iiqw4q-uc.a.run.app/analyze_mp3"
 echo "========================================================"
