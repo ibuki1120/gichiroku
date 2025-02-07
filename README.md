@@ -13,35 +13,48 @@
 - MySQL
 - asia-northeast1
 
-## システム構成図
+## シーケンス図^^
 ```mermaid
-graph LR
-    A[ユーザー] --> B(フロントエンド)
-    B --> C{Cloud Run (バックエンド)}
-    C --> D[Vertex AI]
-    C --> E[Cloud SQL]
-    C --> F[Cloud Storage]
+sequenceDiagram
+    participant ユーザー
+    participant フロントエンド
+    participant Cloud Run (バックエンド)
+    participant Cloud Storage
+    participant Vertex AI
+    participant LLM
 
-    subgraph " "
-        direction LR
-        D --> G[LLM (Large Language Model)]
-    end
-
-    B -.-> H[議事録ファイル (音声/テキスト)]
-    H --> F
-
-    style B fill:#f9f,stroke:#333,stroke-width:2px
-    style C fill:#ccf,stroke:#333,stroke-width:2px
-    style D fill:#aaf,stroke:#333,stroke-width:2px
-    style E fill:#88f,stroke:#333,stroke-width:2px
-    style F fill:#66f,stroke:#333,stroke-width:2px
-    style G fill:#44f,stroke:#333,stroke-width:2px
-    style H fill:#0f0,stroke:#333,stroke-width:2px
-
-    classDef external fill:#eee,stroke:#333
-    class B,C,D,E,F,G external
+    ユーザー->>フロントエンド: 音声ファイルをアップロード
+    activate フロントエンド
+    フロントエンド->>Cloud Run (バックエンド): 音声ファイルを送信
+    deactivate フロントエンド
+    activate Cloud Run (バックエンド)
+    Cloud Run (バックエンド)->>Cloud Storage: 音声ファイルを保存
+    Cloud Run (バックエンド)->>Cloud Run (バックエンド): ファイルパスを生成
+    Cloud Run (バックエンド)->>Vertex AI: 音声ファイルを文字起こし
+    activate Vertex AI
+    Vertex AI->>LLM: 音声データを送信
+    activate LLM
+    LLM-->>Vertex AI: 文字起こし結果を返却
+    deactivate LLM
+    Vertex AI-->>Cloud Run (バックエンド): 文字起こし結果を返却
+    deactivate Vertex AI
+    Cloud Run (バックエンド)->>Vertex AI: 文字起こし結果を要約
+    activate Vertex AI
+    Vertex AI->>LLM: 文字起こし結果を送信
+    activate LLM
+    LLM-->>Vertex AI: 要約結果を返却
+    deactivate LLM
+    Vertex AI-->>Cloud Run (バックエンド): 要約結果を返却
+    deactivate Vertex AI
+    Cloud Run (バックエンド)->>Cloud SQL: 要約結果を保存
+    Cloud Run (バックエンド)->>フロントエンド: 議事録生成完了通知
+    deactivate Cloud Run (バックエンド)
+    activate フロントエンド
+    フロントエンド->>ユーザー: 議事録を表示
+    deactivate フロントエンド
 ```
 
+## 
 
 
 ## GCPプロジェクトの作成手順
@@ -214,4 +227,10 @@ echo "========================================================"
 echo "Curl: "
 curl -X POST -F "audio=@voice.mp3" https://mp3-analyzer-mbe4iiqw4q-uc.a.run.app/analyze_mp3
 echo "========================================================"
+```
+
+## デバッグ
+過去100件のログを出力するよ^^
+```
+gcloud logging read --filter="resource.type=cloud_run_revision AND resource.labels.service_name=gichiroku" --order="desc" --limit=100
 ```
