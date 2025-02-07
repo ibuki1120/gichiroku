@@ -1,0 +1,6 @@
+Flask
+google-cloud-speech
+google-cloud-storage
+google-cloud-aiplatform
+mysql-connector-python
+gunicorn
