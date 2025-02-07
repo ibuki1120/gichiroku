@@ -1,27 +1,67 @@
-# 議知録
+# 議知録 ~gichiroku~
 
 ## 前提
-- Google Cloud Shellで開発するよ
-- 
+- チームメンバ全員同じ開発環境にしたいから、Cloud Shell エディターで開発するよ
+- gitで連携するよ
 
-## GCPプロジェクトの作成
-## 手順
+## 使用するツール
+### VertexAI
+- こいつで会話を解析させる。
+- プロンプト万歳
+### CLOUD SQL
+- gichiroku-storage
+- MySQL
+- asia-northeast1
+
+## システム構成図
+```mermaid
+graph LR
+    A[ユーザー] --> B(フロントエンド)
+    B --> C{Cloud Run (バックエンド)}
+    C --> D[Vertex AI]
+    C --> E[Cloud SQL]
+    C --> F[Cloud Storage]
+
+    subgraph " "
+        direction LR
+        D --> G[LLM (Large Language Model)]
+    end
+
+    B -.-> H[議事録ファイル (音声/テキスト)]
+    H --> F
+
+    style B fill:#f9f,stroke:#333,stroke-width:2px
+    style C fill:#ccf,stroke:#333,stroke-width:2px
+    style D fill:#aaf,stroke:#333,stroke-width:2px
+    style E fill:#88f,stroke:#333,stroke-width:2px
+    style F fill:#66f,stroke:#333,stroke-width:2px
+    style G fill:#44f,stroke:#333,stroke-width:2px
+    style H fill:#0f0,stroke:#333,stroke-width:2px
+
+    classDef external fill:#eee,stroke:#333
+    class B,C,D,E,F,G external
+```
+
+
+
+## GCPプロジェクトの作成手順
 ### プロジェクトの作成
-- PJ名は meeting-mvp-project 
-- 作成後はGUI画面で確認
+- PJ名は gichiroku
+- 作成後はGUI画面で作成されたことを確認しよう
+- 画面右上からCLOUD SHELLを開く
 ```bash
-# PJ一覧の事前確認
+# PJ一覧の作成：事前確認
 gcloud projects list
 
-# まずアプデが求められた
-gcloud components update
-gcloud projects create meeting-mvp-project --set-as-default
+# gijiroku PJの作成
+gcloud projects create gichiroku --set-as-default
 
-# PJ一覧の事後確認
+# PJ一覧の作成：事後確認
 gcloud projects list
 
 # 設定作業中のPJの確認
 gcloud config get-value project
+# gichiroku が出力されればOK!
 
 ```
 
@@ -35,10 +75,13 @@ gcloud config get-value project
 gcloud beta billing accounts list
 
 # 有効化確認
-gcloud beta billing projects describe meeting-mvp-project
+### NAME: 請求先アカウント
+### OPEN: True
+# ならOK
+gcloud beta billing projects describe gichiroku
 
 # 有効化
-gcloud beta billing projects link meeting-mvp-project --billing-account=アカウントID
+gcloud beta billing projects link gichiroku --billing-account=アカウントID
 ```
 
 
@@ -57,60 +100,35 @@ gcloud services enable run.googleapis.com
 
 ### Cloud Storageのセットアップ
 - 作成したバケットをGCPコンソールで確認
-- バケット名は「meeting-mvp-audio-bucket」
+- バケット名は「gichiroku-storage」
 ```bash
 # 一覧確認
 gcloud storage buckets list
 
 # 作成
-gcloud storage buckets create gs://meeting-mvp-audio-bucket --location=asia-northeast1
+gcloud storage buckets create gs://gichiroku-storage --location=asia-northeast1
 ```
 
 
-### Postgreデータベースとユーザーの作成
+###  MySQL データベースインスタンスとユーザーの作成
+- インスタンス: gichidb
+- ID: gichi
+- PW: gichipass
 ```bash
 # 事前確認
 gcloud sql instances list
-
-# まずDBインスタンス作成。とりあえずPostgreでいきます。
-gcloud sql instances create mvp-chat-db --database-version=POSTGRES_14 --tier=db-f1-micro --region=asia-northeast1
-
-# DB作成。※20分くらい必要
-gcloud sql databases create chat --instance=mvp-chat-db
-
-# 事後確認
-gcloud sql databases list --instance=mvp-chat-db
-
-# postgres ユーザーのパスワードを設定
-gcloud sql users set-password postgres --instance=mvp-chat-db --password=P@ssw0rd123
-
-# Cloud SQL に接続
-## パスワード入力が求められる
-gcloud sql connect mvp-chat-db --user=postgres
-```
-
-
-###  MySQL データベースとユーザーの作成
-- ID: myuser
-- PW: mypass0201
-```bash
-# 事前確認
-gcloud sql instances list
-# インスタンスの作成 15分くらいかかる
-gcloud sql instances create my-sql-instance --database-version=MYSQL_8_0 --tier=db-f1-micro --region=asia-northeast1
+# インスタンスの作成
+# 15分くらいかかるよ
+gcloud sql instances create gichidb --database-version=MYSQL_8_0 --tier=db-f1-micro --region=asia-northeast1
 
 # DB作成
-gcloud sql databases create mydatabase --instance=my-sql-instance
+gcloud sql databases create mygichi --instance=my-sql-instance
 # ユーザ作成
-gcloud sql users create myuser --instance=my-sql-instance --password=mypass0201
+gcloud sql users create gichi --instance=my-sql-instance --password=gichipass
 
 # 事後確認
 gcloud sql instances list
 ```
-
-
-
-
 
 ### Cloud Run（バックエンドのデプロイ）
 - Cloud Run は コンテナ化されたアプリケーションをGCP上でサーバーレスで実行できるサービス です。
