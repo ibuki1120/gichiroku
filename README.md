@@ -75,7 +75,7 @@ gcloud config get-value project
 ### 請求の有効化
 1. Google Cloud Consoleの「請求」 に移動。
 2. 「請求アカウントの管理」 で、作成した請求アカウントを開く。
-3. 「プロジェクトをリンク」 をクリックし、meeting-mvp-project を選択。
+3. 「プロジェクトをリンク」 をクリックし、gichirokuを選択。
 4. CLIでもいける
 ```bash
 # アカウントID確認
