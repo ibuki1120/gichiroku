@@ -5,8 +5,8 @@ def read_text_file_as_list(file_path):
     """
     try:
         with open(file_path, "r", encoding="utf-8") as file:
-            content_list = [line.strip() for line in file.readlines() if line.strip()]
-        return content_list
+            content = file.read().strip()
+        return content
     except Exception as e:
         logger.error(f"Error reading file {file_path}: {e}")
         return None

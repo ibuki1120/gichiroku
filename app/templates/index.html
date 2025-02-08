@@ -14,6 +14,9 @@
         
         <!-- ファイル入力とボタンのスタイルを整える -->
         <div class="mb-4">
+            <input type="text" id="user" class="form-control">
+        </div>
+        <div class="mb-4">
             <input type="file" id="fileInput" accept=".mp3" class="form-control">
         </div>
         
@@ -23,9 +26,9 @@
         
         <!-- 結果表示セクション -->
         <div id="result" class="mt-4">
-            <h3>文字起こし:</h3>
-            <p id="transcript" class="bg-light p-3 rounded"></p>
-            <h3>要約:</h3>
+            <h3>ユーザ名:</h3>
+            <p id="userName" class="bg-light p-3 rounded"></p>
+            <h3>フィードバック:</h3>
             <p id="summary" class="bg-light p-3 rounded"></p>
         </div>
     </div>

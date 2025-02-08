@@ -17,7 +17,7 @@ document.getElementById("uploadButton").addEventListener("click", function () {
         if (data.error) {
             alert("エラー: " + data.error);
         } else {
-            document.getElementById("transcript").innerText = data.transcript;
+            document.getElementById("userName").innerText = data.user;
             document.getElementById("summary").innerText = data.summary;
         }
     })
