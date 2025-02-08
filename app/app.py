@@ -6,6 +6,13 @@ import io  # メモリオブジェクトを扱うためのモジュール
 import mysql.connector  # MySQLデータベース接続用モジュール
 import logging  # ログ出力用モジュール
 import json
+import vertexai
+from vertexai.generative_models import (
+    GenerationConfig,
+    GenerativeModel,
+)
+
+from utiles import read_text_file_as_list
 
 # Flaskアプリケーションの作成
 app = Flask(__name__)
@@ -31,6 +38,18 @@ bucket = storage_client.bucket(BUCKET_NAME)  # バケットを取得
 
 # Speech-to-Textクライアントの初期化
 speech_client = speech.SpeechClient()  # Speech-to-Textクライアントを作成
+
+# Vertex AIの初期化
+vertexai.init(project=PROJECT_ID, location=REGION)
+system_instruction_list = read_text_file_as_list("./assets/model/system_instruction.txt")
+vertexai_model = GenerativeModel(
+    "gemini-1.5-flash-002",
+    system_instruction=system_instruction_list
+)
+generation_config = GenerationConfig(
+    temperature=1,
+    max_output_tokens=8192
+)
 
 # Cloud SQL接続
 cnx = None  # データベース接続オブジェクトを初期化
@@ -66,12 +85,14 @@ def transcribe_audio(gcs_uri):
             transcript += alternative.transcript  # 文字起こし結果を追加
     return transcript  # 文字起こし結果を返す
 
-# テキストを要約する関数 (TODO: Vertex AI (LLM) 連携)
+# テキストを要約する関数 
 def summarize_text(text):
     """
-    テキストを要約する (TODO: Vertex AI (LLM) 連携)
+    テキストを要約する
     """
-    return f"TODO: {text}"  # 仮の要約 (TODO: 実際の要約処理を実装)
+    response = vertexai_model.generate_content(text)
+    logger.info(f"Response Text: {response.text}")
+    return response.text
 
 # 要約結果をCloud SQLに保存する関数
 def store_summary(transcript, summary):
