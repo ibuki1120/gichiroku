@@ -5,6 +5,7 @@ import os  # 環境変数を取得するためのモジュール
 import io  # メモリオブジェクトを扱うためのモジュール
 import mysql.connector  # MySQLデータベース接続用モジュール
 import logging  # ログ出力用モジュール
+import json
 
 # Flaskアプリケーションの作成
 app = Flask(__name__)
@@ -123,8 +124,11 @@ def analyze_mp3():
         # 要約結果をCloud SQLに保存
         store_summary(transcript, summary)  # 保存を実行
 
-        return jsonify({'transcript': transcript, 'summary': summary})  # 結果をJSON形式で返す
-
+        return app.response_class(
+            response=json.dumps({'transcript': transcript, 'summary': summary}, ensure_ascii=False),
+            status=200,
+            mimetype='application/json'
+        )
     except Exception as e:  # エラーが発生した場合
         logger.error(f"エラー発生: {e}")  # エラーログを出力
         return jsonify({'error': 'An error occurred during processing.'}), 500  # 500エラーを返す
