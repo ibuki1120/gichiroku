@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify  # Flaskフレームワークの主要な機能
+from flask import Flask, request, jsonify, render_template  # Flaskフレームワークの主要な機能
 from google.cloud import speech_v1p1beta1 as speech  # Google Cloud Speech-to-Text API
 from google.cloud import storage  # Google Cloud Storage API
 import os  # 環境変数を取得するためのモジュール
@@ -155,7 +155,7 @@ def analyze_mp3():
         return jsonify({'error': 'An error occurred during processing.'}), 500  # 500エラーを返す
 
 # ヘルスチェック用エンドポイント
-@app.route('/')
+@app.route('/health')
 def healthz():
     try:
         # デバッグ情報を表示する
@@ -178,6 +178,9 @@ def healthz():
         logging.error(f"ヘルスチェックエラー: {e}")
         return "Error", 500
 
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 # アプリケーションの起動
 if __name__ == '__main__':

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP3 アップロード</title>
+    <!-- Bootstrap CSSを追加 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">MP3 ファイルをアップロード</h2>
+        
+        <!-- ファイル入力とボタンのスタイルを整える -->
+        <div class="mb-4">
+            <input type="file" id="fileInput" accept=".mp3" class="form-control">
+        </div>
+        
+        <div class="text-center">
+            <button id="uploadButton" class="btn btn-primary">アップロード</button>
+        </div>
+        
+        <!-- 結果表示セクション -->
+        <div id="result" class="mt-4">
+            <h3>文字起こし:</h3>
+            <p id="transcript" class="bg-light p-3 rounded"></p>
+            <h3>要約:</h3>
+            <p id="summary" class="bg-light p-3 rounded"></p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JSと依存するPopper.jsを追加 -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
