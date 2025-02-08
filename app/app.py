@@ -130,7 +130,7 @@ def analyze_mp3():
         return jsonify({'error': 'An error occurred during processing.'}), 500  # 500エラーを返す
 
 # ヘルスチェック用エンドポイント
-@app.route('/')
+@app.route('/health')
 def healthz():
     try:
         # デバッグ情報を表示する
@@ -153,6 +153,9 @@ def healthz():
         logging.error(f"ヘルスチェックエラー: {e}")
         return "Error", 500
 
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 # アプリケーションの起動
 if __name__ == '__main__':
