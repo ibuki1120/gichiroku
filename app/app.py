@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify  # Flaskフレームワークの主要な機能
+from flask import Flask, request, jsonify, render_template  # Flaskフレームワークの主要な機能
 from google.cloud import speech_v1p1beta1 as speech  # Google Cloud Speech-to-Text API
 from google.cloud import storage  # Google Cloud Storage API
 import os  # 環境変数を取得するためのモジュール
