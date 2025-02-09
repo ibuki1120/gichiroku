@@ -10,9 +10,10 @@ import vertexai
 from vertexai.generative_models import (
     GenerationConfig,
     GenerativeModel,
+    Part
 )
 
-from utiles import read_text_file_as_list
+from utiles import read_prompt_as_list, read_interaction_as_list
 
 # Flaskアプリケーションの作成
 app = Flask(__name__)
@@ -38,18 +39,6 @@ bucket = storage_client.bucket(BUCKET_NAME)  # バケットを取得
 
 # Speech-to-Textクライアントの初期化
 speech_client = speech.SpeechClient()  # Speech-to-Textクライアントを作成
-
-# Vertex AIの初期化
-vertexai.init(project=PROJECT_ID, location=REGION)
-system_instruction_list = read_text_file_as_list("./assets/model/system_instruction.txt")
-vertexai_model = GenerativeModel(
-    "gemini-1.5-flash-002",
-    system_instruction=system_instruction_list
-)
-generation_config = GenerationConfig(
-    temperature=1,
-    max_output_tokens=8192
-)
 
 # Cloud SQL接続
 cnx = None  # データベース接続オブジェクトを初期化
@@ -78,7 +67,7 @@ def transcribe_audio(gcs_uri):
         language_code="ja-JP",  # 言語コード (日本語)
         enable_automatic_punctuation=True  # 自動句読点付与
     )
-    response = speech_client.recognize(config=config, audio=audio)  # 文字起こしを実行
+    response = speech_client.long_running_recognize(config=config, audio=audio).result(timeout=100000)  # 文字起こしを実行
     transcript = ""  # 文字起こし結果を格納する変数
     for result in response.results:  # 結果をループ処理
         for alternative in result.alternatives:  # 候補をループ処理
@@ -86,11 +75,29 @@ def transcribe_audio(gcs_uri):
     return transcript  # 文字起こし結果を返す
 
 # テキストを要約する関数 
-def summarize_text(text):
+def summarize_text(gcs_uri, user):
     """
     テキストを要約する
     """
-    response = vertexai_model.generate_content(text)
+    vertexai.init(project=PROJECT_ID, location="us-central1")
+    system_instruction_list = read_interaction_as_list("./assets/interaction.txt", user)
+    pronpt_txt = read_prompt_as_list("./assets/pronpt.txt", user)
+    vertexai_model = GenerativeModel(
+        "gemini-2.0-flash-exp",
+        system_instruction=system_instruction_list
+    )
+    generation_config = GenerationConfig(
+        temperature=1,
+        max_output_tokens=8192
+    )
+    response = vertexai_model.generate_content([
+        Part.from_uri(
+            gcs_uri, mime_type="audio/mp3"
+        ),
+        pronpt_txt
+    ], 
+    generation_config=generation_config
+    )
     logger.info(f"Response Text: {response.text}")
     return response.text
 
@@ -113,12 +120,29 @@ def store_summary(transcript, summary):
         finally: # cnx.close()をfinallyブロックに追加
             cnx.close() # 接続が常にクローズされるようにする
 
+
+def init_vertexAI(user):
+    # Vertex AIの初期化
+    vertexai.init(project=PROJECT_ID, location="us-central1")
+    system_instruction_list = read_text_file_as_list("./assets/interaction.txt", user)
+    pronpt_txt = read_text_file_as_list("./assets/pronpt.txt", user)
+    vertexai_model = GenerativeModel("gemini-2.0-flash-exp")
+    generation_config = GenerationConfig(
+        temperature=1,
+        max_output_tokens=8192
+    )
+    return vertexai_model
+
 # MP3ファイルを解析するエンドポイント
 @app.route('/analyze_mp3', methods=['POST'])
 def analyze_mp3():
     try:
+        user = request.form.get("user")
         if 'audio' not in request.files:  # リクエストに音声ファイルが含まれていない場合
             return jsonify({'error': 'No audio file provided'}), 400  # 400エラーを返す
+        
+        if not user:  # リクエストに音声ファイルが含まれていない場合
+            return jsonify({'error': 'No user name'}), 400  # 400エラーを返す
 
         audio_file = request.files['audio']  # 音声ファイルを取得
 
@@ -134,19 +158,15 @@ def analyze_mp3():
         gcs_uri = f"gs://{BUCKET_NAME}/{audio_file.filename}"  # Cloud Storage URI
         logger.info(f"音声ファイルをCloud Storageにアップロード: {gcs_uri}")  # アップロード成功ログを出力
 
-        # 音声ファイルを文字起こし
-        transcript = transcribe_audio(gcs_uri)  # 文字起こしを実行
-        logger.info("音声ファイルを文字起こし")  # 文字起こし成功ログを出力
-
         # テキストを要約
-        summary = summarize_text(transcript)  # 要約を実行
+        summary = summarize_text(gcs_uri, user)  # 要約を実行
         logger.info("テキストを要約")  # 要約成功ログを出力
 
-        # 要約結果をCloud SQLに保存
-        store_summary(transcript, summary)  # 保存を実行
+        # # 要約結果をCloud SQLに保存
+        # store_summary(transcript, summary)  # 保存を実行
 
         return app.response_class(
-            response=json.dumps({'transcript': transcript, 'summary': summary}, ensure_ascii=False),
+            response=json.dumps({'summary': summary, "user": user}, ensure_ascii=False),
             status=200,
             mimetype='application/json'
         )

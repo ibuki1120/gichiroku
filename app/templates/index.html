@@ -7,13 +7,17 @@
     <!-- Bootstrap CSSを追加 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2 class="text-center mb-4">MP3 ファイルをアップロード</h2>
+    <div class="container-fluid">
+        <h2 class="text-center mt-8">議知録</h2>
         
         <!-- ファイル入力とボタンのスタイルを整える -->
-        <div class="mb-4">
+        <div class="mb-8">
+            <input type="text" name="user" id="user" class="form-control">
+        </div>
+        <div class="mb-8">
             <input type="file" id="fileInput" accept=".mp3" class="form-control">
         </div>
         
@@ -22,14 +26,17 @@
         </div>
         
         <!-- 結果表示セクション -->
-        <div id="result" class="mt-4">
-            <h3>文字起こし:</h3>
-            <p id="transcript" class="bg-light p-3 rounded"></p>
-            <h3>要約:</h3>
+        <div id="result" class="mt-8">
+            <h3>ユーザ名:</h3>
+            <p id="userName" class="bg-light p-3 rounded"></p>
+            <h3>フィードバック:</h3>
             <p id="summary" class="bg-light p-3 rounded"></p>
         </div>
     </div>
-
+    <div id="loading" style="display: none; text-align: center;">
+        <p>処理中...</p>
+        <div class="spinner"></div>
+    </div>
     <!-- Bootstrap JSと依存するPopper.jsを追加 -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>

@@ -22,7 +22,7 @@ set -e
 # ---- 必要に応じて環境変数を指定 (無ければ手動で書き換えてください) ----
 PROJECT_ID="${PROJECT_ID:-gichiroku}" 
 REGION="${REGION:-asia-northeast1}"                # デフォルトはus-central1なので注意
-SERVICE_NAME="gichiroku"                     # 任意のサービス名
+SERVICE_NAME="mp3-analyzer"                     # 任意のサービス名
 INSTANCE_CONNECTION_NAME=$(gcloud sql instances describe gichidb --format="value(connectionName)") #your-instance-nameをインスタンス名に変更
 CLOUD_SQL_USER="gichi"
 CLOUD_SQL_PASSWORD="gichipass"
@@ -68,7 +68,8 @@ gcloud run deploy "${SERVICE_NAME}" \
     --project "${PROJECT_ID}" \
     --allow-unauthenticated \
     --platform managed \
-    --set-env-vars PROJECT_ID="$PROJECT_ID",REGION="$REGION",INSTANCE_CONNECTION_NAME="$INSTANCE_CONNECTION_NAME",CLOUD_SQL_USER="$CLOUD_SQL_USER",CLOUD_SQL_PASSWORD="$CLOUD_SQL_PASSWORD",DATABASE_NAME="$DATABASE_NAME"
+    --set-env-vars PROJECT_ID="$PROJECT_ID",REGION="$REGION",INSTANCE_CONNECTION_NAME="$INSTANCE_CONNECTION_NAME",CLOUD_SQL_USER="$CLOUD_SQL_USER",CLOUD_SQL_PASSWORD="$CLOUD_SQL_PASSWORD",DATABASE_NAME="$DATABASE_NAME" \
+    --timeout 59m
 echo "========================================================"
 echo "[4/4] 完了！"
 echo "--------------------------------------------------------"
@@ -77,5 +78,5 @@ gcloud run services describe "${SERVICE_NAME}" --region="${REGION}" --format='va
 echo "========================================================"
 
 echo "Curl: "
-curl -X POST -F "audio=@voice.mp3" "https://gichiroku-228022295019.asia-northeast1.run.app/analyze_mp3"
+curl -X POST -F "audio=@voice.mp3" "https://mp3-analyzer-228022295019.asia-northeast1.run.app/analyze_mp3"
 echo "========================================================"
