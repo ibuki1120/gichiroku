@@ -78,5 +78,5 @@ gcloud run services describe "${SERVICE_NAME}" --region="${REGION}" --format='va
 echo "========================================================"
 
 echo "Curl: "
-curl -X POST -F "audio=@voice.mp3" "https://gichiroku-228022295019.asia-northeast1.run.app/analyze_mp3"
+curl -X POST -F "audio=@voice.mp3" "https://mp3-analyzer-228022295019.asia-northeast1.run.app/analyze_mp3"
 echo "========================================================"
