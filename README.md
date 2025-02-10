@@ -1,4 +1,5 @@
 # 議知録
+※本稿は[AI Agent Hackathon with Google Cloud](https://zenn.dev/hackathons/2024-google-cloud-japan-ai-hackathon)の成果物です。
 
 ## 前提
 - チームメンバ全員同じ開発環境にしたいから、Cloud Shell エディターで開発するよ
