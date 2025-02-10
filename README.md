@@ -1,13 +1,13 @@
-# 議知録 ~gichiroku~
+# 議知録
 
 ## 前提
 - チームメンバ全員同じ開発環境にしたいから、Cloud Shell エディターで開発するよ
-- gitで連携するよ
+- gitで連携
 
 ## 使用するツール
 ### VertexAI
-- こいつで会話を解析させる。
-- プロンプト万歳
+- これで会話を解析させる。
+
 ### CLOUD SQL
 - gichiroku-storage
 - MySQL
@@ -118,26 +118,23 @@ gcloud storage buckets create gs://gichiroku-storage --location=asia-northeast1
 
 
 ###  MySQL データベースインスタンスとユーザーの作成
-- インスタンス: gichidb
-- ID: gichi
-- PW: gichipass
 ```bash
 # 事前確認
 gcloud sql instances list
 # インスタンスの作成
 # 15分くらいかかるよ
-gcloud sql instances create gichidb --database-version=MYSQL_8_0 --tier=db-f1-micro --region=asia-northeast1
+gcloud sql instances create <DB_NAME> --database-version=MYSQL_8_0 --tier=db-f1-micro --region=asia-northeast1
 
 # DB作成
-gcloud sql databases create mygichi --instance=gichidb
+gcloud sql databases create mygichi --instance=<DB_NAME>
 # ユーザ作成
-gcloud sql users create gichi --instance=gichidb --password=gichipass
+gcloud sql users create gichi --instance=<DB_NAME> --password=<DB_PASS>
 
 # 事後確認
 ## インスタンスの確認
 gcloud sql instances list
 ## DBの確認
-gcloud sql databases list --instance=gichidb --format="value(name)"
+gcloud sql databases list --instance=<DB_NAME> --format="value(name)"
 
 ## 環境変数は開発時はdebugしてる
 ```
@@ -166,8 +163,6 @@ cloud-run-backend/
 │   ├── script.js     # JavaScriptファイル（任意）
 ```
 
-## デプロイ
-`app/deploy.sh`を参照してね
 
 ## デバッグ
 - 過去10件のログを出力するよ^^
