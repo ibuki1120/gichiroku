@@ -9,9 +9,7 @@
 - これで会話を解析させる。
 
 ### CLOUD SQL
-- gichiroku-storage
 - MySQL
-- asia-northeast1
 
 ## シーケンス図^^
 ```mermaid
@@ -48,12 +46,8 @@ sequenceDiagram
     deactivate Cloud Shell
 ```
 
-## 
-
-
 ## GCPプロジェクトの作成手順
 ### プロジェクトの作成
-- PJ名は gichiroku
 - 作成後はGUI画面で作成されたことを確認しよう
 - 画面右上からCLOUD SHELLを開く
 ```bash
@@ -61,21 +55,21 @@ sequenceDiagram
 gcloud projects list
 
 # gijiroku PJの作成
-gcloud projects create gichiroku --set-as-default
+gcloud projects create <PROJECT_NAME> --set-as-default
 
 # PJ一覧の作成：事後確認
 gcloud projects list
 
 # 設定作業中のPJの確認
 gcloud config get-value project
-# gichiroku が出力されればOK!
+# <PROJECT_NAME> が出力されればOK!
 
 ```
 
 ### 請求の有効化
 1. Google Cloud Consoleの「請求」 に移動。
 2. 「請求アカウントの管理」 で、作成した請求アカウントを開く。
-3. 「プロジェクトをリンク」 をクリックし、gichirokuを選択。
+3. 「プロジェクトをリンク」 をクリックし、<PROJECT_NAME>を選択。
 4. CLIでもいける
 ```bash
 # アカウントID確認
@@ -85,10 +79,10 @@ gcloud beta billing accounts list
 ### NAME: 請求先アカウント
 ### OPEN: True
 # ならOK
-gcloud beta billing projects describe gichiroku
+gcloud beta billing projects describe <PROJECT_NAME>
 
 # 有効化
-gcloud beta billing projects link gichiroku --billing-account=アカウントID
+gcloud beta billing projects link <PROJECT_NAME> --billing-account=アカウントID
 ```
 
 
@@ -96,24 +90,16 @@ gcloud beta billing projects link gichiroku --billing-account=アカウントID
 ```bash
 # 有効化されているサービス一覧取得
 gcloud services list --enabled
-
-# 有効化するAPI
-gcloud services enable storage.googleapis.com 
-gcloud services enable speech.googleapis.com 
-gcloud services enable sqladmin.googleapis.com 
-gcloud services enable aiplatform.googleapis.com 
-gcloud services enable run.googleapis.com
 ```
 
 ### Cloud Storageのセットアップ
 - 作成したバケットをGCPコンソールで確認
-- バケット名は「gichiroku-storage」
 ```bash
 # 一覧確認
 gcloud storage buckets list
 
 # 作成
-gcloud storage buckets create gs://gichiroku-storage --location=asia-northeast1
+gcloud storage buckets create gs://{bucket-name} --location={location}
 ```
 
 
@@ -128,7 +114,7 @@ gcloud sql instances create <DB_NAME> --database-version=MYSQL_8_0 --tier=db-f1-
 # DB作成
 gcloud sql databases create mygichi --instance=<DB_NAME>
 # ユーザ作成
-gcloud sql users create gichi --instance=<DB_NAME> --password=<DB_PASS>
+gcloud sql users create <USER_NAME> --instance=<DB_NAME> --password=<DB_PASS>
 
 # 事後確認
 ## インスタンスの確認
