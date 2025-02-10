@@ -14,36 +14,18 @@
 ## シーケンス図^^
 ```mermaid
 sequenceDiagram
-    participant Local Machine
-    participant Cloud Shell
-    participant Container Registry (GCR)
-    participant Cloud Run
-    participant Cloud SQL
-    participant Speech-to-Text API
-    participant Vertex AI (LLM)
+    participant ユーザ as ユーザ
+    participant CR as Cloud Run
+    participant CS as Cloud Storage
+    participant VA as Vertex AI
 
-    Local Machine->>Cloud Shell: ./deploy.sh 実行
-    activate Cloud Shell
-    Cloud Shell->>Cloud Shell: 環境変数設定
-    Cloud Shell->>Cloud Shell: Docker build
-    Cloud Shell->>Container Registry (GCR): Docker push
-    Container Registry (GCR)-->>Cloud Shell: イメージ push 完了
-    Cloud Shell->>Cloud Run: gcloud run deploy
-    Cloud Run->>Container Registry (GCR): イメージ pull
-    Cloud Run->>Cloud SQL: データベース接続 (Cloud SQL Proxy/Auth plugin 経由)
-    Cloud Run->>Speech-to-Text API: 音声テキスト変換リクエスト
-    Speech-to-Text API-->>Cloud Run: テキストデータ
-    Cloud Run->>Vertex AI (LLM): テキストデータ送信
-    Vertex AI (LLM)-->>Cloud Run: LLM 推論結果
-    Cloud Run-->>Local Machine: サービス URL
-    Local Machine->>Cloud Shell: curl -X POST ... 実行
-    Cloud Shell->>Cloud Run: 音声データ送信
-    Cloud Run->>Speech-to-Text API: 音声テキスト変換リクエスト
-    Speech-to-Text API-->>Cloud Run: テキストデータ
-    Cloud Run->>Vertex AI (LLM): テキストデータ送信
-    Vertex AI (LLM)-->>Cloud Run: LLM 推論結果
-    Cloud Run-->>Local Machine: LLM 推論結果
-    deactivate Cloud Shell
+    ユーザ->>CR: POST /analyze_mp3 (音声ファイル, ユーザ名)
+    CR->>CR: リクエストの検証 (ファイル存在チェック、拡張子チェック、ユーザ名確認)
+    CR->>CS: 音声ファイルをアップロード (blob.upload_from_file)
+    CS-->>CR: アップロード完了 → gcs_uri を返却
+    CR->>VA: summarize_text(gcs_uri, ユーザ) の呼び出し<br>（プロンプトファイル読み込み、モデル呼び出し）
+    VA-->>CR: 要約テキストを返却
+    CR->>ユーザ: JSON形式で要約テキストとユーザ名を返却
 ```
 
 ## GCPプロジェクトの作成手順
